@@ -12,17 +12,21 @@ import java.util.Scanner;
 
 import static org.junit.Assert.*;
 
-
 /**
- * TODO: 
- * 1. The {@link LinkedIntQueue} has no bugs. We've provided you with some example test cases.
- * Write your own unit tests to test against IntQueue interface with specification testing method 
+ * TODO:
+ * 1. The {@link LinkedIntQueue} has no bugs. We've provided you with some
+ * example test cases.
+ * Write your own unit tests to test against IntQueue interface with
+ * specification testing method
  * using mQueue = new LinkedIntQueue();
  * 
- * 2. 
- * Comment `mQueue = new LinkedIntQueue();` and uncomment `mQueue = new ArrayIntQueue();`
- * Use your test cases from part 1 to test ArrayIntQueue and find bugs in the {@link ArrayIntQueue} class
- * Write more unit tests to test the implementation of ArrayIntQueue, with structural testing method
+ * 2.
+ * Comment `mQueue = new LinkedIntQueue();` and uncomment `mQueue = new
+ * ArrayIntQueue();`
+ * Use your test cases from part 1 to test ArrayIntQueue and find bugs in the
+ * {@link ArrayIntQueue} class
+ * Write more unit tests to test the implementation of ArrayIntQueue, with
+ * structural testing method
  * Aim to achieve 100% line coverage for ArrayIntQueue
  *
  * @author Alex Lockwood, George Guo, Terry Li
@@ -39,7 +43,7 @@ public class IntQueueTest {
     public void setUp() {
         // comment/uncomment these lines to test each class
         mQueue = new LinkedIntQueue();
-    //    mQueue = new ArrayIntQueue();
+        // mQueue = new ArrayIntQueue();
 
         testList = new ArrayList<>(List.of(1, 2, 3));
     }
@@ -52,23 +56,32 @@ public class IntQueueTest {
 
     @Test
     public void testNotEmpty() {
-        mQueue.enqueue(10);
-        // TODO: write your own unit test
-        fail("Test not implemented");
+        IntQueue queue = new ArrayIntQueue();
+        assertTrue("New queue should be empty", queue.isEmpty());
+
+        queue.enqueue(10);
+        assertFalse("Queue with elements should not be empty", queue.isEmpty());
     }
 
     @Test
     public void testPeekEmptyQueue() {
-        assertNull(mQueue.peek());
+        IntQueue queue = new ArrayIntQueue();
+
+        // According to the interface, peek() should return null for empty queue
+        assertNull("Peek on empty queue should return null", queue.peek());
     }
 
     @Test
     public void testPeekNoEmptyQueue() {
-        mQueue.enqueue(5);
-        mQueue.enqueue(15);
-        mQueue.enqueue(25);
-        // TODO: write your own unit test
-        assertEquals(Integer.valueOf(5), mQueue.peek());
+        IntQueue queue = new ArrayIntQueue();
+        Integer testValue = 42;
+        queue.enqueue(testValue);
+        queue.enqueue(73);
+
+        // Peek should return the first element without removing it
+        assertEquals("Peek should return first element", testValue, queue.peek());
+        assertEquals("Peek should not remove elements", testValue, queue.peek());
+        assertEquals("Queue size should not change after peek", 2, queue.size());
     }
 
     @Test
@@ -83,17 +96,24 @@ public class IntQueueTest {
 
     @Test
     public void testDequeue() {
-        mQueue.enqueue(100);
-        mQueue.enqueue(200);
-        mQueue.enqueue(300);
-        assertEquals(Integer.valueOf(100), mQueue.dequeue());
-        assertEquals(Integer.valueOf(200), mQueue.dequeue());
-        assertEquals(Integer.valueOf(300), mQueue.dequeue());
+        IntQueue queue = new ArrayIntQueue();
+        Integer first = 10;
+        Integer second = 20;
+        Integer third = 30;
 
-        // TODO: write your own unit test
-        assertNull(mQueue.dequeue());
+        queue.enqueue(first);
+        queue.enqueue(second);
+        queue.enqueue(third);
 
-        assertTrue(mQueue.isEmpty());
+        assertEquals("Queue should have 3 elements", 3, queue.size());
+        assertEquals("First dequeue should return first element", first, queue.dequeue());
+        assertEquals("Queue should have 2 elements after one dequeue", 2, queue.size());
+        assertEquals("Second dequeue should return second element", second, queue.dequeue());
+        assertEquals("Third dequeue should return third element", third, queue.dequeue());
+        assertTrue("Queue should be empty after dequeueing all elements", queue.isEmpty());
+
+        // Test dequeue on empty queue
+        assertNull("Dequeue on empty queue should return null", queue.dequeue());
     }
 
     @Test
@@ -117,5 +137,81 @@ public class IntQueueTest {
         }
     }
 
+    @Test
+    public void testClear() {
+        IntQueue queue = new ArrayIntQueue();
 
+        // Add some elements
+        queue.enqueue(10);
+        queue.enqueue(20);
+        queue.enqueue(30);
+        assertEquals(3, queue.size());
+
+        // Clear the queue
+        queue.clear();
+
+        // Verify queue is empty
+        assertTrue("Queue should be empty after clear", queue.isEmpty());
+        assertEquals("Queue size should be 0 after clear", 0, queue.size());
+        assertNull("Peek should return null after clear", queue.peek());
+        assertNull("Dequeue should return null after clear", queue.dequeue());
+
+        // Verify we can still add elements after clearing
+        assertTrue(queue.enqueue(40));
+        assertEquals(Integer.valueOf(40), queue.peek());
+    }
+
+    @Test
+    public void testEnsureCapacity() {
+        IntQueue queue = new ArrayIntQueue();
+
+        // Add more than the initial capacity (10) elements
+        for (int i = 0; i < 15; i++) {
+            assertTrue(queue.enqueue(i));
+        }
+
+        // Verify all elements are still in the queue in the right order
+        assertEquals(15, queue.size());
+
+        for (int i = 0; i < 15; i++) {
+            assertEquals(Integer.valueOf(i), queue.dequeue());
+        }
+
+        assertTrue(queue.isEmpty());
+    }
+
+    @Test
+    public void testWrappingQueue() {
+        IntQueue queue = new ArrayIntQueue();
+
+        // First fill and partially empty to create a wrap situation
+        for (int i = 0; i < 7; i++) {
+            queue.enqueue(i);
+        }
+
+        // Remove some elements to move the head
+        for (int i = 0; i < 5; i++) {
+            assertEquals(Integer.valueOf(i), queue.dequeue());
+        }
+
+        // Add more elements to force wrap-around and capacity increase
+        for (int i = 100; i < 115; i++) {
+            queue.enqueue(i);
+        }
+
+        // Verify queue size
+        assertEquals(17, queue.size());
+
+        // Verify remaining original elements
+        assertEquals(Integer.valueOf(5), queue.dequeue());
+        assertEquals(Integer.valueOf(6), queue.dequeue());
+
+        // Verify new elements
+        for (int i = 100; i < 115; i++) {
+            assertEquals(Integer.valueOf(i), queue.dequeue());
+        }
+
+        // Queue should be empty now
+        assertTrue(queue.isEmpty());
+    }
 }
